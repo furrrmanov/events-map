@@ -4,8 +4,8 @@ const bodyParser = require('body-parser')
 const firebase = require('firebase-admin')
 
 const serviceAccount = require('./serviceAccountKey.json')
-const notificationFunctions = require('./api/notifications')
-const autostart = require('./serverUtils/autostart')
+const notificationFunctions = require('./src/server/api/notifications')
+const autostart = require('./src/server/serverUtils/autostart')
 
 const port = parseInt(process.env.PORT, 10) || 3000
 const dev = process.env.NODE_ENV !== 'production'
@@ -39,11 +39,8 @@ app.prepare().then(() => {
     notificationFunctions.handleDeleteNotification
   )
 
-
-
   server.listen(port, (err) => {
     if (err) throw err
     console.log(`> Ready on http://localhost:${port}`)
   })
-  
 })

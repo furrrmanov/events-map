@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { wrapper } from 'redux/store'
+import { wrapper } from 'src/client/redux/store'
 import Head from 'next/head'
 
 import 'leaflet/dist/leaflet.css'
