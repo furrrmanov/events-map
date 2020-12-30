@@ -8,8 +8,7 @@ export const Button = styled(MaterialButton)`
 `
 
 export const TableCell = styled(MaterialTableCell)`
-  text-align: center !important;
-  width: 25px !important;
+  text-align: center;
   overflow: auto !important;
   flex-wrap: nowrap !important;
   padding: 5px !important;

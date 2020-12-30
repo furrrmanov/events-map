@@ -1,9 +1,6 @@
 import firebase from 'firebase'
 import 'firebase/storage'
 
-// import { directStore } from 'src/client/redux/store'
-// import { getEventListFromFirebaseDb } from 'src/client/actions'
-
 const firebaseConfig = {
   apiKey: 'AIzaSyALCk5QBr0DYOjhcs3JpNcSaGcU6AgzQc0',
   authDomain: 'map-events-293ec.firebaseapp.com',
@@ -22,9 +19,6 @@ export const database = firebase.database()
 export const storage = firebase.storage()
 const provider = new firebase.auth.GoogleAuthProvider()
 export default firebase
-
-// const state = directStore
-// console.log(state)
 
 export const singInWithEmailUsingFirebase = (email, password) => {
   return firebase
@@ -70,17 +64,6 @@ export const getEventsListFirebaseDB = () => {
     .then((snapshot) => Object.entries(snapshot.val()))
 }
 
-// export const x = () => {
-//   return database.ref('/events').on('value', (snapshot) => {
-//     const data = Object.entries(snapshot.val())
-    
-//     state.dispatch(getEventListFromFirebaseDb())
-//     console.log(data)
-//   })
-// }
-
-
-
 export const sendItemInFirebaseDb = (item) => {
   return database.ref('/events').push(item)
 }
@@ -89,7 +72,9 @@ export const deleteItemFromFirebaseDb = (value) => {
   const databaseRef = database.ref(value.collectionName)
   return databaseRef.once('value', (snpsht) => {
     snpsht.forEach((dp) => {
-      database.ref(value.collectionRoot + value.itemId).set(null)
+      database
+        .ref(`${value.collectionRoot}${value.itemId}`)
+        .update({ deleted: true })
     })
   })
 }
@@ -104,7 +89,9 @@ export const updateItemFromFirebaseDb = (value) => {
   const databaseRef = database.ref(value.collectionName)
   return databaseRef.once('value', (snpsht) => {
     snpsht.forEach((dp) => {
-      database.ref(value.collectionRoot + value.editEventId).set(value.data)
+      database
+        .ref(`${value.collectionRoot}${value.editEventId}`)
+        .set(value.data)
     })
   })
 }
@@ -134,6 +121,8 @@ export const updateUserProfilesInFirebaseDb = (value) => {
   const databaseRef = database.ref(value.collectionName)
 
   return databaseRef.once('value', (snpsht) => {
-    database.ref(value.collectionRoot + value.profile.id).set(value.profile)
+    database
+      .ref(`${value.collectionRoot}${value.profile.id}`)
+      .set(value.profile)
   })
 }

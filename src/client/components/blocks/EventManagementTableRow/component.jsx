@@ -5,6 +5,7 @@ import moment from 'moment'
 import TableRow from '@material-ui/core/TableRow'
 import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'
+import Checkbox from '@material-ui/core/Checkbox'
 
 import ActionConfirmationPopup from 'src/client/components/blocks/actionConfirmationPopup'
 import { getDeleteItemRequest } from 'src/client/actions'
@@ -12,9 +13,14 @@ import { getDeleteItemRequest } from 'src/client/actions'
 import { TableCell, ButtonsWrapper, Button } from './styles'
 
 export default function CustomTableRow(props) {
-  const { row, openEditPopup } = props
+  const { row, openEditPopup, selectedItemIntoChange, selected } = props
   const [deleteConfirmation, setDeleteConfirmation] = useState(false)
   const dispatch = useDispatch()
+
+  const handleClickCheckBox = () => {
+    selectedItemIntoChange(row.id)
+  }
+
 
   const handleClickButtonDelete = () => {
     setDeleteConfirmation(true)
@@ -40,15 +46,20 @@ export default function CustomTableRow(props) {
 
   return (
     <TableRow key={row.name}>
-      <TableCell>{row.name}</TableCell>
+      <TableCell padding="checkbox">
+        <Checkbox onClick={handleClickCheckBox} checked={selected.includes(row.id)}/>
+      </TableCell>
+      <TableCell align="center">{row.name}</TableCell>
       <TableCell>
         {row.date ? moment.unix(row.date / 1000).format('LL H:m') : null}
       </TableCell>
-      <TableCell>{row.public ? 'Yes' : 'No'}</TableCell>
-      <TableCell>{row.deleteExpiredEvent ? 'Yes' : 'No'}</TableCell>
-      <TableCell>{row.notifications ? 'Yes' : 'No'}</TableCell>
-      <TableCell>{row.friendsEmail}</TableCell>
-      <TableCell>
+      <TableCell align="center">{row.public ? 'Yes' : 'No'}</TableCell>
+      <TableCell align="center">
+        {row.deleteExpiredEvent ? 'Yes' : 'No'}
+      </TableCell>
+      <TableCell align="center">{row.notifications ? 'Yes' : 'No'}</TableCell>
+      <TableCell align="center">{row.friendsEmail}</TableCell>
+      <TableCell align="left" width="0">
         {deleteConfirmation ? (
           <ActionConfirmationPopup
             confirmDeleteEvent={confirmDeleteEvent}
@@ -59,7 +70,7 @@ export default function CustomTableRow(props) {
         <ButtonsWrapper>
           <Button
             onClick={handleClickButtonEdit}
-            variant="contained"
+            variant="outlined"
             color="primary"
             size="small"
             startIcon={<EditIcon />}>
@@ -67,7 +78,7 @@ export default function CustomTableRow(props) {
           </Button>
           <Button
             onClick={handleClickButtonDelete}
-            variant="contained"
+            variant="outlined"
             size="small"
             color="secondary"
             startIcon={<DeleteIcon />}>

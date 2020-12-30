@@ -5,6 +5,8 @@ import Checkbox from '@material-ui/core/Checkbox'
 import SaveIcon from '@material-ui/icons/Save'
 import { Button } from '@material-ui/core'
 
+import { updateUserProfileRequest } from 'src/client/actions'
+
 import { Wrapper, Title, CheckBoxWrapper, Text } from './styles'
 
 export default function NotificationsControls() {
@@ -61,7 +63,7 @@ export default function NotificationsControls() {
         />
       </CheckBoxWrapper>
       <Button
-        variant="contained"
+        variant="outlined"
         color="primary"
         size="small"
         type="submit"

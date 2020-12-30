@@ -17,13 +17,13 @@ export default function ActionConfirmationPopup(props) {
       <Title>Are you sure ?</Title>
       <ButtonContainer>
         <Button
-          variant="contained"
+          variant="outlined"
           color="secondary"
           onClick={handleClickButtonConfirm}>
           Yes
         </Button>
         <Button
-          variant="contained"
+          variant="outlined"
           color="secondary"
           onClick={handleClickButtonCancel}>
           No

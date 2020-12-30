@@ -35,9 +35,18 @@ const updateItemInEventsFirebaseDb = (id) => {
   database.ref(`/events/${id}`).update({ completed: true })
 }
 
+const deleteItemFromFirebaseDb = (value) => {
+  const databaseRef = database.ref(value.collectionName)
+
+  return databaseRef.once('value', (snpsht) => {
+    database.ref(value.collectionRoot + value.itemId).set(null)
+  })
+}
+
 module.exports = {
   database,
   getEventsListFirebaseDb,
   getUsersProfileListFirebaseDb,
   updateItemInEventsFirebaseDb,
+  deleteItemFromFirebaseDb,
 }

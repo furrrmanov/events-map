@@ -15,7 +15,10 @@ import {
   getEventListFromFirebaseDb,
   showSuccessSnackbar,
 } from 'src/client/actions'
-import { transformDataList } from 'src/client/utils/dataMappers'
+import {
+  transformDataList,
+  filteringDeletedEvents,
+} from 'src/client/utils/dataMappers'
 import {
   setRequestForCreatingNotificationInNextJsApi,
   setRequestForDeleteNotificationInNextJsApi,
@@ -36,7 +39,7 @@ function* workerSendUserEvent({ payload }) {
     const response = yield setRequestForCreatingNotificationInNextJsApi({
       event: payload,
       eventId: event.getKey(),
-      owner: state.user.email,
+      notificationOption: state.profiles.userProfile,
       userDivicesToken: state.profiles.userProfile.devicesToken,
     })
 
@@ -53,7 +56,7 @@ export function* watchEventsListRequest() {
 function* workerEventsList() {
   const data = yield getEventsListFirebaseDB()
 
-  yield put(setEventList(transformDataList(data)))
+  yield put(setEventList(filteringDeletedEvents(transformDataList(data))))
 }
 
 export function* watchDeleteItemforFirebaseDbRequest() {

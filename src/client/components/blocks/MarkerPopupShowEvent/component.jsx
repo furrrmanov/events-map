@@ -58,7 +58,7 @@ export default function MarkerPopupShowEvent(props) {
         <ButtonsWrapper>
           <Button
             onClick={handleClickButtonEdit}
-            variant="contained"
+            variant="outlined"
             color="primary"
             size="small"
             startIcon={<EditIcon />}>
@@ -66,7 +66,7 @@ export default function MarkerPopupShowEvent(props) {
           </Button>
           <Button
             onClick={handleClickButtonDelete}
-            variant="contained"
+            variant="outlined"
             color="secondary"
             size="small"
             startIcon={<DeleteIcon />}>

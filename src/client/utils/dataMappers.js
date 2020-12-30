@@ -33,9 +33,15 @@ export const convertEventDataInObject = (
     date: dateForUnixCode,
     deleteExpiredEvent: expiredEvent,
     notifications: eventNotifications,
-    friendsEmail: friends.length >= 1 ? friends.split(',') : '',
+    friendsEmail:
+      friends.length >= 1 && typeof friends == String
+        ? friends.split(',')
+        : friends.length >= 1
+        ? friends
+        : '',
     coordinates: position,
     completed: false,
+    deleted: false,
   }
 }
 
@@ -44,6 +50,10 @@ export const transformDataList = (data) => {
     acc.push({ ...item[1], id: item[0] })
     return acc
   }, [])
+}
+
+export const filteringDeletedEvents = (data) => {
+  return data.filter((item) => item.deleted === false)
 }
 
 export const userAccessRightsToViewEvents = (eventsList, userEmail) => {
@@ -63,15 +73,50 @@ export const transformDataInCsv = (data) => {
     acc.push({
       name: event.name,
       date: event.date ? moment.unix(event.date / 1000).format('LL HH:mm') : '',
-      friends: event.friendsEmail,
+      friendsEmail: event.friendsEmail,
       createdBy: event.createdBy,
       public: event.public,
+      deleted: event.deleted,
       deleteExpiredEvent: event.deleteExpiredEvent,
       notifications: event.notifications,
       coordinates: `${event.coordinates.lat}, ${event.coordinates.lng}`,
-      completed: event.completed
+      completed: event.completed,
+    })
+    
+    return acc
+  }, [])
+
+  return dataCsv
+}
+
+export const removingDuplicateEvents = (userEventList, eventListOfCsv) => {
+  const eventsNameOfCsv = eventListOfCsv.map((event) => event.name)
+  const dublicateEvents = userEventList.filter((event) =>
+    eventsNameOfCsv.includes(event.name)
+  )
+
+  return dublicateEvents
+}
+
+export const generateEventsListFromCsvFile = (data) => {
+  const filterdData = data.filter((item) => item.name)
+ 
+  return filterdData.reduce((acc, item) => {
+    acc.push({
+      ...item,
+      public: item.public.toUpperCase() === 'TRUE' ? true : false,
+      completed: item.completed.toUpperCase() === 'TRUE' ? true : false,
+      date: item.date ? moment(item.date, 'LL HH:mm').valueOf() : '',
+      deleteExpiredEvent:
+        item.deleteExpiredEvent.toUpperCase() === 'TRUE' ? true : false,
+      notifications: item.notifications.toUpperCase() === 'TRUE' ? true : false,
+      friendsEmail: item.friendsEmail ? item.friendsEmail.split(',') : '',
+      coordinates: {
+        lat: item.coordinates.split(',')[0],
+        lng: item.coordinates.split(',')[1],
+      },
+      deleted: item.deleted.toUpperCase() === 'TRUE' ? true : false,
     })
     return acc
   }, [])
-  return dataCsv
 }

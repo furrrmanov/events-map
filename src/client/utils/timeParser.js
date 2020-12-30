@@ -5,5 +5,5 @@ export const parsingDateFromUnix = (date) => {
 }
 
 export const parsingTimeFromUnix = (date) => {
-  return moment.unix(date / 1000).format('H:m')
+  return moment.unix(date / 1000).format('H:mm')
 }

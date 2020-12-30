@@ -2,6 +2,7 @@ const firebase = require('firebase-admin')
 const schedule = require('node-schedule')
 const moment = require('moment')
 const firebaseDatabase = require('./firebase')
+const emailNotification = require('./emailNotificationTransporter')
 
 function NotificationsRegistry() {
   if (arguments.callee._singletonInstance) {
@@ -44,6 +45,7 @@ const options = {
 
 function createNotification(data) {
   const firebaseToken = data.userDivicesToken
+  const notificationOption = data.notificationOption
   const eventId = data.eventId
   const tenMinutesInUnix = 600000
   const nameValidation = /^\S+|\S+$/g.test(data.event.name)
@@ -56,7 +58,12 @@ function createNotification(data) {
     differenceInTime > tenMinutesInUnix &&
     data.event.date > moment().format('x')
   ) {
-    return createScheduledNotification(data.event, firebaseToken, eventId)
+    return createScheduledNotification(
+      data.event,
+      firebaseToken,
+      eventId,
+      notificationOption
+    )
   } else if (
     nameValidation &&
     data.event.date &&
@@ -68,7 +75,8 @@ function createNotification(data) {
       data.event,
       firebaseToken,
       differenceInTime,
-      eventId
+      eventId,
+      notificationOption
     )
   } else if (nameValidation) {
     return { status: 'ok', description: 'event created' }
@@ -77,11 +85,17 @@ function createNotification(data) {
   }
 }
 
-function createScheduledNotification(event, firebaseToken, eventId) {
+function createScheduledNotification(
+  event,
+  firebaseToken,
+  eventId,
+  notificationOption
+) {
   try {
+    const notificationTitle = '10 minutes left before your event'
     const payload = {
       notification: {
-        title: '10 minutes left before your event',
+        title: notificationTitle,
         body: event.name,
       },
     }
@@ -91,7 +105,18 @@ function createScheduledNotification(event, firebaseToken, eventId) {
       .format()
 
     const scheduleJob = schedule.scheduleJob(date, function () {
-      firebase.messaging().sendToDevice(firebaseToken, payload, options)
+      if (
+        notificationOption.pushNotification &&
+        notificationOption.emailNotification
+      ) {
+        createEmailNotification(firebaseToken, payload, options)
+        createFirebaseMessagesNotification(event, notificationTitle)
+      } else if (notificationOption.pushNotification) {
+        createFirebaseMessagesNotification(event, notificationTitle)
+      } else if (notificationOption.emailNotification) {
+        createEmailNotification(firebaseToken, payload, options)
+      }
+
       scheduleJob.cancel()
     })
 
@@ -101,6 +126,15 @@ function createScheduledNotification(event, firebaseToken, eventId) {
         setCompletedEvent(eventId)
         setCompletedSheduleJob.cancel()
         notificationsRegistry.state().deleteStateItem(eventId)
+
+        if (event.deleteExpiredEvent) {
+          console.log('Delete event from firebase')
+          firebaseDatabase.deleteItemFromFirebaseDb({
+            collectionName: '/events',
+            collectionRoot: 'events/',
+            itemId: eventId,
+          })
+        }
       }
     )
 
@@ -122,14 +156,18 @@ function createInstantNotification(
   event,
   firebaseToken,
   differenceInTime,
-  eventId
+  eventId,
+  notificationOption
 ) {
   try {
+    const difference = moment.unix(differenceInTime / 1000).format('m')
+    const notificationTitle =
+      difference === '0'
+        ? 'your event has come'
+        : `${difference} minutes left before your event`
     const payload = {
       notification: {
-        title: `${moment
-          .unix(differenceInTime / 1000)
-          .format('m')} minutes left before your event`,
+        title: notificationTitle,
         body: event.name,
       },
     }
@@ -138,7 +176,19 @@ function createInstantNotification(
       moment().add(30, 'seconds').format(),
       function () {
         console.log('push notification')
-        firebase.messaging().sendToDevice(firebaseToken, payload, options)
+
+        if (
+          notificationOption.pushNotification &&
+          notificationOption.emailNotification
+        ) {
+          createEmailNotification(firebaseToken, payload, options)
+          createFirebaseMessagesNotification(event, notificationTitle)
+        } else if (notificationOption.pushNotification) {
+          createFirebaseMessagesNotification(event, notificationTitle)
+        } else if (notificationOption.emailNotification) {
+          createEmailNotification(firebaseToken, payload, options)
+        }
+
         scheduleJob.cancel()
       }
     )
@@ -149,6 +199,15 @@ function createInstantNotification(
         setCompletedEvent(eventId)
         setCompletedSheduleJob.cancel()
         notificationsRegistry.state().deleteStateItem(eventId)
+
+        if (event.deleteExpiredEvent) {
+          console.log('Delete event from firebase')
+          firebaseDatabase.deleteItemFromFirebaseDb({
+            collectionName: '/events',
+            collectionRoot: 'events/',
+            itemId: eventId,
+          })
+        }
       }
     )
 
@@ -180,6 +239,18 @@ function deleteNotification(event) {
 function setCompletedEvent(eventId) {
   console.log('id completd event', eventId)
   firebaseDatabase.updateItemInEventsFirebaseDb(eventId)
+}
+
+const createEmailNotification = (firebaseToken, payload, options) => {
+  firebase.messaging().sendToDevice(firebaseToken, payload, options)
+}
+
+const createFirebaseMessagesNotification = (event, notificationTitle) => {
+  emailNotification.pushEmailNotification(
+    notificationTitle,
+    event.name,
+    event.createdBy
+  )
 }
 
 module.exports = {

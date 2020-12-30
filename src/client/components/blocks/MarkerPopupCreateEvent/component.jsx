@@ -164,14 +164,15 @@ export default function MarkerPopupCreateEvent(props) {
           />
         </CheckboxContainer>
         <InputEmailContainer>
+        <Title>Friends email:</Title>
           <Input
-            placeholder="Friends email"
+            placeholder="example@gmail.com"
             value={friendsEmail}
             onChange={handleChangeInputFriendsEmail}
           />
         </InputEmailContainer>
         <Button
-          variant="contained"
+          variant="outlined"
           color="primary"
           size="small"
           type="submit"
